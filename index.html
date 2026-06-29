@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Developer | 3D Portfolio</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: '#030305',
+                        brand: {
+                            DEFAULT: '#8B5CF6',
+                            light: '#A78BFA',
+                            dark: '#6D28D9'
+                        },
+                        accent: {
+                            DEFAULT: '#06B6D4',
+                            light: '#67E8F9',
+                            dark: '#0891B2'
+                        }
+                    },
+                    backgroundImage: {
+                        'glass': 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)',
+                        'glass-hover': 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom CSS -->
+    <style>
+        /* Base & Reset */
+        :root {
+            --cursor-size: 10px;
+            --cursor-follower-size: 40px;
+        }
+
+        body {
+            background-color: #030305;
+            color: #ffffff;
+            overflow-x: hidden;
+            cursor: none;
+            /* Hide default cursor for custom one */
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #030305;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8B5CF6;
+        }
+
+        /* Custom Cursor */
+        #cursor,
+        #cursor-follower {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+
+        #cursor {
+            width: var(--cursor-size);
+            height: var(--cursor-size);
+            background-color: #06B6D4;
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        #cursor-follower {
+            width: var(--cursor-follower-size);
+            height: var(--cursor-follower-size);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            transition: width 0.3s, height 0.3s, border-color 0.3s, background-color 0.3s;
+            transition-timing-function: ease-out;
+        }
+
+        body:active #cursor {
+            transform: translate(-50%, -50%) scale(0.8);
+        }
+
+        .cursor-hover #cursor {
+            background-color: transparent;
+        }
+
+        .cursor-hover #cursor-follower {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(6, 182, 212, 0.1);
+            border-color: #06B6D4;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(25, 25, 30, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Text Gradients */
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #8B5CF6, #06B6D4);
+        }
+
+        .text-gradient-alt {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #F43F5E, #F59E0B);
+        }
+
+        /* Utilities */
+        .canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Lenis smooth scroll */
+        html.lenis {
+            height: auto;
+        }
+
+        .lenis.lenis-smooth {
+            scroll-behavior: auto;
+        }
+
+        .lenis.lenis-smooth [data-lenis-prevent] {
+            overscroll-behavior: contain;
+        }
+
+        .lenis.lenis-stopped {
+            overflow: hidden;
+        }
+
+        /* Loader */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #030305;
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease-out;
+        }
+
+        .loader-ring {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #06B6D4;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Typing cursor */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s step-start infinite;
+            color: #06B6D4;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-brand selection:text-white">
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="flex flex-col items-center gap-4">
+            <div class="loader-ring"></div>
+            <p class="font-display tracking-widest text-sm text-gray-400">INITIALIZING UNIVERSE...</p>
+        </div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div id="cursor"></div>
+    <div id="cursor-follower"></div>
+
+    <!-- WebGL Background -->
+    <div class="canvas-container" id="canvas-container"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="font-display font-bold text-xl tracking-tighter hover-trigger relative group">
+                <span class="text-white">Madhusudan</span><span class="text-brand"> &nbsp;Nimbalkar</span>
+                <span
+                    class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-brand to-accent transition-all duration-300 group-hover:w-full"></span>
+            </a>
+
+            <div
+                class="hidden md:flex gap-8 items-center bg-white/5 backdrop-blur-md px-6 py-2 rounded-full border border-white/10">
+                <a href="#about"
+                    class="text-sm font-medium text-gray-300 hover:text-white transition-colors hover-trigger">About</a>
+                <a href="#skills"
+                    class="text-sm font-medium text-gray-300 hover:text-white transition-colors hover-trigger">Skills</a>
+                <a href="#projects"
+                    class="text-sm font-medium text-gray-300 hover:text-white transition-colors hover-trigger">Work</a>
+                <a href="#experience"
+                    class="text-sm font-medium text-gray-300 hover:text-white transition-colors hover-trigger">Experience</a>
+                <a href="#contact"
+                    class="text-sm font-medium text-gray-300 hover:text-white transition-colors hover-trigger">Contact</a>
+            </div>
+
+            <button class="md:hidden text-white hover-trigger" id="mobile-menu-btn">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu"
+        class="fixed inset-0 bg-dark/95 backdrop-blur-xl z-40 flex flex-col justify-center items-center gap-8 opacity-0 pointer-events-none transition-opacity duration-300">
+        <a href="#about"
+            class="text-2xl font-display font-bold hover:text-brand transition-colors mobile-link">About</a>
+        <a href="#skills"
+            class="text-2xl font-display font-bold hover:text-brand transition-colors mobile-link">Skills</a>
+        <a href="#projects"
+            class="text-2xl font-display font-bold hover:text-brand transition-colors mobile-link">Work</a>
+        <a href="#experience"
+            class="text-2xl font-display font-bold hover:text-brand transition-colors mobile-link">Experience</a>
+        <a href="#contact"
+            class="text-2xl font-display font-bold hover:text-brand transition-colors mobile-link">Contact</a>
+    </div>
+
+    <!-- Main Content -->
+    <main class="relative z-10">
+
+        <!-- Hero Section -->
+        <section id="hero" class="min-h-screen flex items-center justify-center pt-20 px-6 relative overflow-hidden">
+
+            <div class="max-w-5xl mx-auto text-center">
+                <div
+                    class="inline-block mb-4 px-4 py-1.5 rounded-full glass-panel text-xs font-semibold tracking-widest text-brand-light gs-reveal-up">
+                    <span class="inline-block w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse"></span>
+                    AVAILABLE FOR NEW OPPORTUNITIES
+                </div>
+                <h1
+                    class="text-5xl md:text-7xl lg:text-8xl font-display font-bold mb-6 tracking-tight leading-tight gs-reveal-up">
+                    Turning <span class="text-gradient">Ideas</span> into<br class="hidden md:block" /> Digital
+                    Experiences.
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-400 mb-10 max-w-2xl mx-auto h-8 gs-reveal-up">
+                    I am a <span id="typewriter" class="text-white font-medium typing-cursor"></span>
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center gs-reveal-up">
+                    <a href="#projects"
+                        class="hover-trigger group relative px-8 py-4 bg-white text-dark font-semibold rounded-full overflow-hidden transition-transform hover:scale-105">
+                        <span class="relative z-10 flex items-center gap-2">View Projects <i data-lucide="arrow-right"
+                                class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i></span>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-brand to-accent opacity-0 group-hover:opacity-100 transition-opacity z-0">
+                        </div>
+                        <span class="absolute inset-0 z-0 bg-white group-hover:bg-transparent transition-colors"></span>
+                    </a>
+                    <a href="#contact"
+                        class="hover-trigger px-8 py-4 glass-panel text-white font-semibold rounded-full hover:bg-white/10 transition-colors">
+                        Contact Me
+                    </a>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator -->
+            <div
+                class="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50 animate-bounce">
+                <span class="text-xs tracking-widest uppercase font-medium ">Scroll</span>
+                <i data-lucide="mouse" class="w-5 h-5"></i>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-32 px-6 relative">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid md:grid-cols-2 gap-16 items-center">
+                    <div class="gs-reveal-left">
+                        <h2 class="text-4xl md:text-5xl font-display font-bold mb-6">Redefining the <br /><span
+                                class="text-gradient">Web Experience</span></h2>
+                        <p class="text-gray-400 text-lg mb-6 leading-relaxed">
+                            With over 3 years of experience as a Laravel Full Stack Developer, I specialize in building
+                            secure, scalable, and high-performance web applications. My expertise includes PHP, Laravel,
+                            MySQL, JavaScript, AJAX, REST APIs, HTML, CSS, and Bootstrap.
+                        </p>
+                        <p class="text-gray-400 text-lg mb-8 leading-relaxed">
+                            I have hands-on experience developing and integrating RESTful APIs, designing efficient
+                            database architectures, implementing authentication and authorization, optimizing
+                            application performance, and delivering responsive user interfaces. I focus on writing
+                            clean, maintainable code while ensuring reliability, security, and a seamless user
+                            experience.
+                        </p>
+                        <div class="flex gap-6">
+                            <div class="flex flex-col">
+                                <span class="text-4xl font-display font-bold text-white stat-number">3</span>
+                                <span class="text-sm text-gray-500 font-medium">Years Exp.</span>
+                            </div>
+                            <div class="w-px bg-white/10"></div>
+                            <div class="flex flex-col">
+                                <span class="text-4xl font-display font-bold text-white stat-number">8</span>
+                                <span class="text-sm text-gray-500 font-medium">Projects</span>
+                            </div>
+                            <div class="w-px bg-white/10"></div>
+                            <div class="flex flex-col">
+                                <span class="text-4xl font-display font-bold text-white stat-number">1</span>
+                                <span class="text-sm text-gray-500 font-medium">Awards</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative gs-reveal-right">
+                        <!-- Abstract Glass Morphism Shape Representation -->
+                        <div class="aspect-square rounded-3xl glass-panel relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-br from-brand/20 to-accent/20 z-0"></div>
+                            <div
+                                class="absolute -inset-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:translate-x-full duration-1000 transition-transform skew-x-12 z-10">
+                            </div>
+                            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                alt="Coding Workspace" class="object-cover w-full h-full mix-blend-overlay opacity-50">
+
+                            <!-- Floating badges -->
+                            <div
+                                class="absolute top-10 -left-6 glass-panel px-4 py-2 rounded-lg flex items-center gap-2 animate-[bounce_4s_infinite]">
+                                <i data-lucide="code" class="text-accent w-4 h-4"></i> <span
+                                    class="text-sm font-medium">Clean Code</span>
+                            </div>
+                            <div
+                                class="absolute bottom-10 -right-6 glass-panel px-4 py-2 rounded-lg flex items-center gap-2 animate-[bounce_5s_infinite_reverse]">
+                                <i data-lucide="cpu" class="text-brand w-4 h-4"></i> <span
+                                    class="text-sm font-medium">Optimized</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="py-32 px-6 relative bg-dark/50">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16 gs-reveal-up">
+                    <h2 class="text-4xl md:text-5xl font-display font-bold mb-4">Technical <span
+                            class="text-gradient">Arsenal</span></h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">Technologies I use to build secure, scalable, and
+                        high-performance web applications.</p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <!-- Skill items generated dynamically or static -->
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-brand/50 hover-trigger gs-skill">
+                        <i data-lucide="file-code-2" class="w-8 h-8 text-gray-300"></i>
+                        <span class="font-medium text-sm">HTML/CSS</span>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-yellow-400/50 hover-trigger gs-skill">
+                        <i data-lucide="file-json-2" class="w-8 h-8 text-yellow-400"></i>
+                        <span class="font-medium text-sm">JavaScript</span>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-cyan-400/50 hover-trigger gs-skill">
+                        <img src="https://cdn.simpleicons.org/php/777BB4" alt="PHP" class="w-8 h-8">
+                        <span class="font-medium text-sm">PHP</span>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-red-500/50 hover-trigger gs-skill">
+                        <img src="https://cdn.simpleicons.org/laravel/FF2D20" alt="Laravel" class="w-8 h-8">
+                        <span class="font-medium text-sm">Laravel</span>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-blue-500/50 hover-trigger gs-skill">
+                        <i data-lucide="server" class="w-8 h-8 text-blue-500"></i>
+                        <span class="font-medium text-sm">REST API</span>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-yellow-500/50 hover-trigger gs-skill">
+                        <i data-lucide="refresh-cw" class="w-8 h-8 text-yellow-500"></i>
+                        <span class="font-medium text-sm">AJAX</span>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-sky-500/50 hover-trigger gs-skill">
+                        <img src="https://cdn.simpleicons.org/alpinedotjs/8BC0D0" alt="Alpine.js" class="w-8 h-8">
+                        <span class="font-medium text-sm">Alpine.js</span>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-purple-500/50 hover-trigger gs-skill">
+                        <img src="https://cdn.simpleicons.org/bootstrap/7952B3" alt="Bootstrap" class="w-8 h-8">
+                        <span class="font-medium text-sm">Bootstrap</span>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-pink-500/50 hover-trigger gs-skill">
+                        <i data-lucide="pen-tool" class="w-8 h-8 text-pink-500"></i>
+                        <span class="font-medium text-sm">UI/UX</span>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-orange-500/50 hover-trigger gs-skill">
+                        <img src="https://cdn.simpleicons.org/mysql/4479A1" alt="MySQL" class="w-8 h-8">
+                        <span class="font-medium text-sm">MySQL</span>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-orange-600/50 hover-trigger gs-skill">
+                        <img src="https://cdn.simpleicons.org/git/F05032" alt="Git" class="w-8 h-8">
+                        <span class="font-medium text-sm">Git</span>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-3 hover:-translate-y-2 transition-transform hover:border-blue-600/50 hover-trigger gs-skill">
+                        <img src="https://cdn.simpleicons.org/wordpress/21759B" alt="WordPress" class="w-8 h-8">
+                        <span class="font-medium text-sm">WordPress</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="py-32 px-6 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-16 gs-reveal-up gap-6">
+                    <div>
+                        <h2 class="text-4xl md:text-5xl font-display font-bold mb-4">Selected <span
+                                class="text-gradient">Works</span></h2>
+                        <p class="text-gray-400">Award-winning experiences and cutting-edge web applications.</p>
+                    </div>
+                    <div class="flex gap-2 bg-white/5 p-1 rounded-lg backdrop-blur-md border border-white/10">
+                        <button
+                            class="px-4 py-2 rounded-md bg-white/10 text-white text-sm font-medium transition-colors hover-trigger">All</button>
+                        <button
+                            class="px-4 py-2 rounded-md hover:bg-white/5 text-gray-400 hover:text-white text-sm font-medium transition-colors hover-trigger">WebGL</button>
+                        <button
+                            class="px-4 py-2 rounded-md hover:bg-white/5 text-gray-400 hover:text-white text-sm font-medium transition-colors hover-trigger">React</button>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Project Card 1 -->
+                    <div class="project-card glass-panel rounded-2xl overflow-hidden hover-trigger gs-reveal-up group"
+                        style="transition-delay:100ms" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare
+                        data-tilt-max-glare="0.2">
+
+                        <!-- Image -->
+                        <div class="relative h-64 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop"
+                                alt="Project"
+                                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+
+                            <!-- Buttons -->
+                            <div
+                                class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center gap-4">
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-brand text-white flex items-center justify-center hover:scale-110 transition">
+                                    <i data-lucide="external-link" class="w-5 h-5"></i>
+                                </a>
+
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 backdrop-blur-sm">
+                                    <i data-lucide="github" class="w-5 h-5"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="p-6 relative">
+
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400">Laravel</span>
+                                <span class="text-xs px-2 py-1 rounded bg-indigo-500/20 text-indigo-400">PHP</span>
+                                <span class="text-xs px-2 py-1 rounded bg-emerald-500/20 text-emerald-400">API
+                                    Integration</span>
+                                <span class="text-xs px-2 py-1 rounded bg-blue-500/20 text-blue-400">REST API</span>
+                                <span class="text-xs px-2 py-1 rounded bg-green-500/20 text-green-400">MySQL</span>
+                                <span
+                                    class="text-xs px-2 py-1 rounded bg-purple-500/20 text-purple-400">Bootstrap</span>
+                                <span class="text-xs px-2 py-1 rounded bg-orange-500/20 text-orange-400">HTML</span>
+                                <span class="text-xs px-2 py-1 rounded bg-cyan-500/20 text-cyan-400">CSS</span>
+                                <span
+                                    class="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-400">JavaScript</span>
+                            </div>
+
+                            <h3 class="text-xl font-bold mb-2">
+                                Eazy Collect - Loan Finance & Mandate Management System
+                            </h3>
+
+                            <!-- Short Description -->
+                            <p class="text-gray-400 text-sm transition-all duration-300 group-hover:opacity-0">
+                                Loan finance platform with eNACH, settlements, credit score APIs and dealer management.
+                            </p>
+
+                            <!-- Hover Details -->
+                            <div
+                                class="absolute inset-0 bg-[#111827]/95 text-white p-6 opacity-0 translate-y-full group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 overflow-y-auto">
+
+                                <h4 class="text-lg font-semibold mb-4 text-brand-light">
+                                    Project Highlights
+                                </h4>
+
+                                <ul class="list-disc pl-5 space-y-3 text-sm text-gray-300">
+                                    <li>
+                                        Developed a Loan Finance Web Application with UPI AutoPay eNACH integration
+                                        using Laravel MVC architecture, including REST APIs for mandate creation and
+                                        management using PHP, MySQL, HTML, AJAX, Bootstrap, CSS, and JavaScript.
+                                    </li>
+
+                                    <li>
+                                        Built an automated mandate system supporting monthly, quarterly, and yearly
+                                        debit cycles with cron jobs and EMI reminder SMS notifications.
+                                    </li>
+
+                                    <li>
+                                        Created multi-level panels (Admin, Distributor, Super Distributor, Dealer &
+                                        Dealer App) with a secure Mandate Key purchase system.
+                                    </li>
+
+                                    <li>
+                                        Implemented a Settlement Module for T+3 payment settlements and real-time
+                                        customer mandate tracking across all panels.
+                                    </li>
+
+                                    <li>
+                                        Integrated Credit Score APIs with key-based deduction logic for dealer-side
+                                        customer credit score checks.
+                                    </li>
+                                </ul>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Project Card 2 -->
+                    <div class="project-card glass-panel rounded-2xl overflow-hidden hover-trigger gs-reveal-up group"
+                        style="transition-delay:100ms" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare
+                        data-tilt-max-glare="0.2">
+
+                        <!-- Image -->
+                        <div class="relative h-64 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop"
+                                alt="Loan Management Project"
+                                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+
+                            <!-- Icons -->
+                            <div
+                                class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center gap-4">
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-brand text-white flex items-center justify-center hover:scale-110 transition">
+                                    <i data-lucide="external-link" class="w-5 h-5"></i>
+                                </a>
+
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 backdrop-blur-sm">
+                                    <i data-lucide="github" class="w-5 h-5"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="relative p-6">
+
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400">Laravel</span>
+                                <span class="text-xs px-2 py-1 rounded bg-indigo-500/20 text-indigo-400">PHP</span>
+                                <span class="text-xs px-2 py-1 rounded bg-emerald-500/20 text-emerald-400">API
+                                    Integration</span>
+                                <span class="text-xs px-2 py-1 rounded bg-blue-500/20 text-blue-400">REST API</span>
+                                <span class="text-xs px-2 py-1 rounded bg-green-500/20 text-green-400">MySQL</span>
+                                <span
+                                    class="text-xs px-2 py-1 rounded bg-purple-500/20 text-purple-400">Bootstrap</span>
+                                <span class="text-xs px-2 py-1 rounded bg-orange-500/20 text-orange-400">HTML</span>
+                                <span class="text-xs px-2 py-1 rounded bg-cyan-500/20 text-cyan-400">CSS</span>
+                                <span
+                                    class="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-400">JavaScript</span>
+                            </div>
+
+                            <h3 class="text-xl font-display font-bold mb-2">
+                                Loan Management & EMI Tracking Platform
+                            </h3>
+
+                            <!-- Short Description -->
+                            <p class="text-sm text-gray-400 transition-opacity duration-300 group-hover:opacity-0">
+                                Loan management platform with EMI tracking, Aadhaar/PAN verification, and dealer-admin
+                                workflow.
+                            </p>
+
+                            <!-- Hover Details -->
+                            <div
+                                class="absolute inset-0 bg-[#111827]/95 p-6 text-white opacity-0 translate-y-full group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 overflow-y-auto">
+
+                                <h4 class="text-lg font-semibold text-brand-light mb-4">
+                                    Project Highlights
+                                </h4>
+
+                                <ul class="list-disc pl-5 space-y-3 text-sm text-gray-300">
+                                    <li>Developed a Loan Management System with separate Admin and Dealer panels using
+                                        Laravel MVC architecture, PHP, MySQL, HTML, CSS, JavaScript, and REST APIs.</li>
+
+                                    <li>Built a complete loan creation and approval workflow enabling dealers to submit
+                                        loan applications while allowing admins to verify and approve requests
+                                        efficiently.</li>
+
+                                    <li>Developed EMI management functionality to display paid, pending, and upcoming
+                                        EMI schedules based on loan frequency.</li>
+
+                                    <li>Implemented cash collection and settlement modules to automatically update
+                                        payment records and outstanding loan balances.</li>
+
+                                    <li>Integrated Aadhaar and PAN verification APIs to validate customer details before
+                                        loan creation.</li>
+
+                                    <li>Created and integrated REST APIs for seamless communication with third-party
+                                        services and frontend applications.</li>
+                                </ul>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Project Card 3 -->
+                    <div class="project-card glass-panel rounded-2xl overflow-hidden hover-trigger gs-reveal-up group"
+                        style="transition-delay:100ms" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare
+                        data-tilt-max-glare="0.2">
+
+                        <!-- Image -->
+                        <div class="relative h-64 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=800&auto=format&fit=crop"
+                                alt="Matrimonial Site"
+                                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+
+                            <!-- Action Buttons -->
+                            <div
+                                class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center gap-4">
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-brand text-white flex items-center justify-center hover:scale-110 transition">
+                                    <i data-lucide="external-link" class="w-5 h-5"></i>
+                                </a>
+
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 backdrop-blur-sm">
+                                    <i data-lucide="github" class="w-5 h-5"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="relative p-6">
+
+                            <div class="flex flex-wrap gap-2 mb-3">
+
+                                <span class="text-xs px-2 py-1 rounded bg-brand/20 text-brand-light">Laravel</span>
+                                <span class="text-xs px-2 py-1 rounded bg-pink-500/20 text-pink-400">Alpine.js</span>
+                                <span class="text-xs px-2 py-1 rounded bg-blue-500/20 text-blue-400">AJAX</span>
+                                <span
+                                    class="text-xs px-2 py-1 rounded bg-purple-500/20 text-purple-400">Bootstrap</span>
+                                <span class="text-xs px-2 py-1 rounded bg-orange-500/20 text-orange-400">HTML</span>
+                                <span class="text-xs px-2 py-1 rounded bg-cyan-500/20 text-cyan-400">CSS</span>
+                                <span
+                                    class="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-400">JavaScript</span>
+                                <span class="text-xs px-2 py-1 rounded bg-green-500/20 text-green-400">MySQL</span>
+                            </div>
+
+                            <h3 class="text-xl font-display font-bold mb-2">
+                                Matrimonial Site
+                            </h3>
+
+                            <!-- Short Description -->
+                            <p class="text-sm text-gray-400 transition-opacity duration-300 group-hover:opacity-0">
+                                A feature-rich matrimonial platform with intelligent profile matching, premium
+                                memberships, and personalized user experience.
+                            </p>
+
+                            <!-- Hover Details -->
+                            <div
+                                class="absolute inset-0 bg-[#111827]/95 p-6 text-white opacity-0 translate-y-full group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 overflow-y-auto">
+
+                                <h4 class="text-lg font-semibold text-brand-light mb-4">
+                                    Project Highlights
+                                </h4>
+
+                                <ul class="list-disc pl-5 space-y-3 text-sm text-gray-300">
+
+                                    <li>
+                                        Developed a Matrimonial Web Application using Laravel, PHP, MySQL, HTML, CSS,
+                                        Bootstrap, JavaScript, AJAX, and Alpine.js.
+                                    </li>
+
+                                    <li>
+                                        Implemented intelligent profile matching based on user interests, age
+                                        preferences, and compatibility criteria.
+                                    </li>
+
+                                    <li>
+                                        Built wishlist functionality and advanced profile filtering to enhance user
+                                        personalization and matchmaking.
+                                    </li>
+
+                                    <li>
+                                        Developed paid membership plans with limited-access features, premium profile
+                                        visibility, and exclusive user benefits.
+                                    </li>
+
+                                </ul>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- <div class="mt-16 text-center">
+                    <a href="#"
+                        class="inline-flex items-center gap-2 text-white font-medium hover:text-brand transition-colors hover-trigger relative group">
+                        Explore Full Archive
+                        <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        <span
+                            class="absolute -bottom-1 left-0 w-full h-px bg-white/20 group-hover:bg-brand transition-colors"></span>
+                    </a>
+                </div> -->
+            </div>
+        </section>
+
+        <!-- Experience Timeline -->
+        <section id="experience" class="py-24 px-6 bg-dark/50">
+            <div class="max-w-6xl mx-auto">
+
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-bold">
+                        Career <span class="text-gradient">Evolution</span>
+                    </h2>
+                </div>
+
+                <div class="relative">
+
+                    <!-- Center Line -->
+                    <div class="absolute left-4 md:left-1/2 top-0 h-full w-[2px] bg-white/10 md:-translate-x-1/2">
+                    </div>
+
+                    <!-- Item 1 -->
+                    <div class="relative flex md:justify-start mb-14">
+
+                        <!-- Dot -->
+                        <div
+                            class="absolute left-4 md:left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-brand border-4 border-dark z-10">
+                        </div>
+
+                        <div
+                            class="ml-12 md:ml-0 md:w-[45%] glass-panel p-6 rounded-2xl md:text-right hover:border-brand/40 transition">
+
+                            <span class="text-brand-light text-sm font-semibold">
+                                2026 - PRESENT
+                            </span>
+
+                            <h3 class="text-2xl font-bold mt-2">
+                                Software Development Engineer 1
+                            </h3>
+
+                            <p class="text-gray-400 text-sm mt-1">
+                                Grin Technologies
+                            </p>
+
+                            <p class="text-gray-400 mt-4">
+                                Developing secure, scalable, and performance-driven finance and web solutions using
+                                Laravel, PHP, MySQL, JavaScript, and RESTful APIs.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="relative flex md:justify-end mb-14">
+
+                        <div
+                            class="absolute left-4 md:left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-accent border-4 border-dark z-10">
+                        </div>
+
+                        <div
+                            class="ml-12 md:ml-0 md:w-[45%] glass-panel p-6 rounded-2xl hover:border-accent/40 transition">
+
+                            <span class="text-accent-light text-sm font-semibold">
+                                2025 - 2026
+                            </span>
+
+                            <h3 class="text-2xl font-bold mt-2">
+                                Associate Software Developer
+                            </h3>
+
+                            <p class="text-gray-400 text-sm mt-1">
+                                Grin Technologies
+                            </p>
+
+                            <p class="text-gray-400 mt-4">
+                                Developed full-stack web applications using Laravel, PHP, MySQL, and JavaScript while
+                                ensuring performance and maintainability.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="relative flex md:justify-start mb-14">
+
+                        <div
+                            class="absolute left-4 md:left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gray-400 border-4 border-dark z-10">
+                        </div>
+
+                        <div
+                            class="ml-12 md:ml-0 md:w-[45%] glass-panel p-6 rounded-2xl md:text-right hover:border-white/30 transition">
+
+                            <span class="text-gray-300 text-sm font-semibold">
+                                2023 - 2024
+                            </span>
+
+                            <h3 class="text-2xl font-bold mt-2">
+                                Associate Software Developer
+                            </h3>
+
+                            <p class="text-gray-400 text-sm mt-1">
+                                Livlyworks
+                            </p>
+
+                            <p class="text-gray-400 mt-4">
+                                Built matrimonial platforms, custom admin panels, and e-commerce solutions using
+                                Laravel.
+                            </p>
+
+                        </div>
+
+                    </div>
+                    <!-- item 4 -->
+                    <div class="relative flex md:justify-end mb-14">
+
+                        <div
+                            class="absolute left-4 md:left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-accent border-4 border-dark z-10">
+                        </div>
+
+                        <div
+                            class="ml-12 md:ml-0 md:w-[45%] glass-panel p-6 rounded-2xl hover:border-accent/40 transition">
+
+                            <span class="text-accent-light text-sm font-semibold">
+                                2023 - 2023
+                            </span>
+
+                            <h3 class="text-2xl font-bold mt-2">
+                                Front-End Developer
+                            </h3>
+
+                            <p class="text-gray-400 text-sm mt-1">
+                                ISRI Technologies
+                            </p>
+
+                            <p class="text-gray-400 mt-4">
+                                Developed responsive and interactive web applications using HTML, CSS, JavaScript,
+                                jQuery, and Bootstrap while ensuring performance and maintainability.
+                            </p>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Awards / Achievements -->
+        <section class="py-20 px-6 overflow-hidden">
+            <div class="max-w-7xl mx-auto gs-reveal-up">
+                <div class="flex items-center gap-6 mb-10">
+                    <h2 class="text-2xl font-display font-bold">Recognition</h2>
+                    <div class="h-px bg-white/10 flex-1"></div>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div
+                        class="glass-panel p-6 rounded-xl flex gap-4 items-start hover:bg-white/5 transition-colors hover-trigger">
+                        <div class="p-3 bg-brand/10 text-brand rounded-lg"><i data-lucide="award"></i></div>
+                        <div>
+                            <h4 class="font-bold text-white mb-1">Site of the Day</h4>
+                            <p class="text-sm text-gray-400">Awwwards &bull; 2023</p>
+                        </div>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-xl flex gap-4 items-start hover:bg-white/5 transition-colors hover-trigger">
+                        <div class="p-3 bg-accent/10 text-accent rounded-lg"><i data-lucide="trophy"></i></div>
+                        <div>
+                            <h4 class="font-bold text-white mb-1">FWA of the Month</h4>
+                            <p class="text-sm text-gray-400">The FWA &bull; 2022</p>
+                        </div>
+                    </div>
+                    <div
+                        class="glass-panel p-6 rounded-xl flex gap-4 items-start hover:bg-white/5 transition-colors hover-trigger">
+                        <div class="p-3 bg-yellow-500/10 text-yellow-500 rounded-lg"><i data-lucide="star"></i></div>
+                        <div>
+                            <h4 class="font-bold text-white mb-1">Developer Award</h4>
+                            <p class="text-sm text-gray-400">CSS Design Awards &bull; 2021</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-32 px-6 relative">
+            <div class="max-w-5xl mx-auto glass-panel rounded-3xl p-8 md:p-16 relative overflow-hidden">
+                <!-- Decorative background glow -->
+                <div class="absolute top-0 right-0 w-96 h-96 bg-brand/20 blur-[100px] rounded-full pointer-events-none">
+                </div>
+                <div
+                    class="absolute bottom-0 left-0 w-96 h-96 bg-accent/20 blur-[100px] rounded-full pointer-events-none">
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-16 relative z-10">
+                    <div class="gs-reveal-left">
+                        <h2 class="text-4xl md:text-5xl font-display font-bold mb-4">Let's <span
+                                class="text-gradient">Connect</span></h2>
+                        <p class="text-gray-400 mb-8">Currently open for new opportunities, freelance projects, or just
+                            a chat about code and design.</p>
+
+                        <div class="space-y-6">
+                            <a href="mailto:mr.madhusudan.09@gmail.com"
+                                class="flex items-center gap-4 text-gray-300 hover:text-white transition-colors hover-trigger group">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-brand/20 group-hover:text-brand transition-colors">
+                                    <i data-lucide="mail"></i>
+                                </div>
+                                <div>
+                                    <span class="block text-sm text-gray-500">Email</span>
+                                    <span class="font-medium">mr.madhusudan.09@gmail.com</span>
+                                </div>
+                            </a>
+                            <div class="flex items-center gap-4 text-gray-300">
+                                <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
+                                    <i data-lucide="map-pin"></i>
+                                </div>
+                                <div>
+                                    <span class="block text-sm text-gray-500">Location</span>
+                                    <span class="font-medium">Nagpur, Maharashtra, India (Remote)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 mt-12">
+                            <a href="#"
+                                class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all hover-trigger hover:-translate-y-1"><i
+                                    data-lucide="twitter" class="w-4 h-4"></i></a>
+                            <a href="#"
+                                class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all hover-trigger hover:-translate-y-1"><i
+                                    data-lucide="linkedin" class="w-4 h-4"></i></a>
+                            <a href="#"
+                                class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all hover-trigger hover:-translate-y-1"><i
+                                    data-lucide="github" class="w-4 h-4"></i></a>
+                            <a href="#"
+                                class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all hover-trigger hover:-translate-y-1"><i
+                                    data-lucide="dribbble" class="w-4 h-4"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="gs-reveal-right">
+                        <form id="contact-form" class="space-y-6">
+
+                            <div class="relative">
+                                <input type="text" id="name" name="name" required
+                                    class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand transition-colors peer placeholder-transparent"
+                                    placeholder="Name">
+                                <label for="name"
+                                    class="absolute left-4 top-3 text-sm text-gray-500 transition-all peer-focus:-top-6 peer-focus:text-brand peer-focus:text-xs peer-valid:-top-6 peer-valid:text-xs">
+                                    Your Name
+                                </label>
+                            </div>
+
+                            <div class="relative">
+                                <input type="email" id="email" name="email" required
+                                    class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand transition-colors peer placeholder-transparent"
+                                    placeholder="Email">
+                                <label for="email"
+                                    class="absolute left-4 top-3 text-sm text-gray-500 transition-all peer-focus:-top-6 peer-focus:text-brand peer-focus:text-xs peer-valid:-top-6 peer-valid:text-xs">
+                                    Email Address
+                                </label>
+                            </div>
+
+                            <div class="relative">
+                                <textarea id="message" name="message" required rows="4"
+                                    class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand transition-colors peer placeholder-transparent resize-none"
+                                    placeholder="Message"></textarea>
+                                <label for="message"
+                                    class="absolute left-4 top-3 text-sm text-gray-500 transition-all peer-focus:-top-6 peer-focus:text-brand peer-focus:text-xs peer-valid:-top-6 peer-valid:text-xs">
+                                    Your Message
+                                </label>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full py-4 bg-white text-dark font-bold rounded-lg hover:bg-gray-200 transition-colors hover-trigger relative overflow-hidden group">
+                                <span class="relative z-10 flex justify-center items-center gap-2">
+                                    Send Message
+                                    <i data-lucide="send"
+                                        class="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                                </span>
+                            </button>
+
+                            <p id="form-success" class="text-green-400 text-sm hidden text-center">
+                                Message transmitted successfully!
+                            </p>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/10 py-8 text-center relative z-10 bg-dark/80 backdrop-blur-md">
+            <p class="text-gray-500 text-sm">&copy; 2026 All rights reserved.</p>
+        </footer>
+
+    </main>
+
+    <!-- Dependencies via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <!-- Main Logic -->
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // 1. Initial Loader & Setup
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                initAnimations();
+            }, 1000);
+        });
+
+        // 2. Smooth Scrolling (Lenis)
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+            infinite: false,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        // Sync GSAP with Lenis
+        gsap.registerPlugin(ScrollTrigger);
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+        gsap.ticker.lagSmoothing(0);
+
+        // 3. Custom Cursor Logic
+        const cursor = document.getElementById('cursor');
+        const cursorFollower = document.getElementById('cursor-follower');
+        let mouseX = 0, mouseY = 0, followerX = 0, followerY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            // Instantly move the small dot
+            cursor.style.left = mouseX + 'px';
+            cursor.style.top = mouseY + 'px';
+        });
+
+        // Smooth follow for the outer circle
+        gsap.ticker.add(() => {
+            followerX += (mouseX - followerX) * 0.15;
+            followerY += (mouseY - followerY) * 0.15;
+            cursorFollower.style.left = followerX + 'px';
+            cursorFollower.style.top = followerY + 'px';
+        });
+
+        // Hover effects for cursor
+        const hoverTriggers = document.querySelectorAll('.hover-trigger, a, button, input, textarea');
+        hoverTriggers.forEach(el => {
+            el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+            el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+        });
+
+        // 4. Three.js Background Implementation (High Performance & Cinematic)
+        const canvasContainer = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x030305, 0.0015);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 30;
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // optimize performance
+        canvasContainer.appendChild(renderer.domElement);
+
+        // Particle System (Starfield / Dust)
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 1500;
+        const posArray = new Float32Array(particlesCount * 3);
+
+        for (let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 100;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.05,
+            color: 0x8B5CF6,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        // Abstract Floating Geometries
+        const geometries = [];
+        const geoMaterial = new THREE.MeshStandardMaterial({
+            color: 0x030305,
+            wireframe: true,
+            emissive: 0x06B6D4,
+            emissiveIntensity: 0.2
+        });
+
+        const icosahedronGeo = new THREE.IcosahedronGeometry(4, 1);
+        const torusGeo = new THREE.TorusKnotGeometry(3, 0.8, 100, 16);
+
+        const mesh1 = new THREE.Mesh(icosahedronGeo, geoMaterial);
+        mesh1.position.set(15, 5, -10);
+        scene.add(mesh1);
+        geometries.push({ mesh: mesh1, rotSpeedX: 0.002, rotSpeedY: 0.003 });
+
+        const mesh2 = new THREE.Mesh(torusGeo, geoMaterial);
+        mesh2.position.set(-15, -10, -20);
+        scene.add(mesh2);
+        geometries.push({ mesh: mesh2, rotSpeedX: -0.001, rotSpeedY: 0.002 });
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+        scene.add(ambientLight);
+
+        const pointLight1 = new THREE.PointLight(0x8B5CF6, 2, 50);
+        pointLight1.position.set(10, 10, 10);
+        scene.add(pointLight1);
+
+        const pointLight2 = new THREE.PointLight(0x06B6D4, 2, 50);
+        pointLight2.position.set(-10, -10, 10);
+        scene.add(pointLight2);
+
+        // Three.js Animation Loop & Parallax
+        let targetX = 0;
+        let targetY = 0;
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (event) => {
+            targetX = (event.clientX - windowHalfX) * 0.001;
+            targetY = (event.clientY - windowHalfY) * 0.001;
+        });
+
+        const clock = new THREE.Clock();
+
+        function animateThreeJS() {
+            requestAnimationFrame(animateThreeJS);
+            const elapsedTime = clock.getElapsedTime();
+
+            // Rotate Particles
+            particlesMesh.rotation.y = -0.05 * elapsedTime;
+            particlesMesh.rotation.x = 0.01 * elapsedTime;
+
+            // Rotate Geometries
+            geometries.forEach(obj => {
+                obj.mesh.rotation.x += obj.rotSpeedX;
+                obj.mesh.rotation.y += obj.rotSpeedY;
+            });
+
+            // Camera Parallax
+            camera.position.x += (targetX * 10 - camera.position.x) * 0.02;
+            camera.position.y += (-targetY * 10 - camera.position.y) * 0.02;
+
+            // Scroll reactive camera Z
+            const scrollY = window.scrollY;
+            camera.position.z = 30 - (scrollY * 0.01);
+
+            renderer.render(scene, camera);
+        }
+        animateThreeJS();
+
+        // Resize Handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 5. GSAP Animations & ScrollTriggers
+        function initAnimations() {
+            // Hero Elements Reveal
+            gsap.fromTo('.gs-reveal-up',
+                { y: 50, opacity: 0 },
+                { y: 0, opacity: 1, duration: 1, stagger: 0.15, ease: "power3.out" }
+            );
+
+            // Scroll Reveal Left/Right/Up
+            const revealLeft = gsap.utils.toArray('.gs-reveal-left');
+            revealLeft.forEach(elem => {
+                gsap.fromTo(elem, { x: -50, opacity: 0 }, {
+                    x: 0, opacity: 1, duration: 1, ease: "power3.out",
+                    scrollTrigger: { trigger: elem, start: "top 85%" }
+                });
+            });
+
+            const revealRight = gsap.utils.toArray('.gs-reveal-right');
+            revealRight.forEach(elem => {
+                gsap.fromTo(elem, { x: 50, opacity: 0 }, {
+                    x: 0, opacity: 1, duration: 1, ease: "power3.out",
+                    scrollTrigger: { trigger: elem, start: "top 85%" }
+                });
+            });
+
+            // Skills Stagger
+            gsap.fromTo('.gs-skill',
+                { y: 30, opacity: 0 },
+                {
+                    y: 0, opacity: 1, duration: 0.6, stagger: 0.05, ease: "back.out(1.7)",
+                    scrollTrigger: { trigger: "#skills", start: "top 75%" }
+                }
+            );
+
+            // Animate Numbers
+            const numbers = document.querySelectorAll('.stat-number');
+            numbers.forEach(num => {
+                const target = parseInt(num.innerText);
+                gsap.fromTo(num, { innerText: 0 }, {
+                    innerText: target,
+                    duration: 2,
+                    snap: { innerText: 1 },
+                    ease: "power2.out",
+                    scrollTrigger: { trigger: num, start: "top 90%" }
+                });
+            });
+
+            // Navbar blur effect on scroll
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('bg-dark/80', 'backdrop-blur-lg', 'border-b', 'border-white/5');
+                } else {
+                    navbar.classList.remove('bg-dark/80', 'backdrop-blur-lg', 'border-b', 'border-white/5');
+                }
+            });
+        }
+
+        // 6. Typewriter Effect
+        const roles = ["Front-End Architect.", "Creative Laravel Developer.", "UI/UX Enthusiast."];
+        let roleIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        const typeTextElement = document.getElementById("typewriter");
+
+        function typeWriter() {
+            const currentRole = roles[roleIndex];
+
+            if (isDeleting) {
+                typeTextElement.textContent = currentRole.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typeTextElement.textContent = currentRole.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            let typeSpeed = isDeleting ? 50 : 100;
+
+            if (!isDeleting && charIndex === currentRole.length) {
+                typeSpeed = 2000; // Pause at end
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                roleIndex = (roleIndex + 1) % roles.length;
+                typeSpeed = 500; // Pause before new word
+            }
+
+            setTimeout(typeWriter, typeSpeed);
+        }
+        setTimeout(typeWriter, 1500); // Start after loader
+
+        // 7. Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+        let isMenuOpen = false;
+
+        mobileMenuBtn.addEventListener('click', () => {
+            isMenuOpen = !isMenuOpen;
+            if (isMenuOpen) {
+                mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
+                document.body.style.overflow = 'hidden'; // prevent scroll
+            } else {
+                mobileMenu.classList.add('opacity-0', 'pointer-events-none');
+                document.body.style.overflow = '';
+            }
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                isMenuOpen = false;
+                mobileMenu.classList.add('opacity-0', 'pointer-events-none');
+                document.body.style.overflow = '';
+            });
+        });
+
+        // 8. Contact Form Handling
+        const contactForm = document.getElementById('contact-form');
+        const formSuccess = document.getElementById('form-success');
+
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = contactForm.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="w-5 h-5 border-2 border-dark border-t-transparent rounded-full animate-spin"></div>';
+
+            // Simulate API Call
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                contactForm.reset();
+                formSuccess.classList.remove('hidden');
+                setTimeout(() => formSuccess.classList.add('hidden'), 5000);
+            }, 1500);
+        });
+        //--- mail 
+
+        emailjs.init({
+            publicKey: "ZoRUwIsPY5lTTQaCl",
+        });
+
+        const form = document.getElementById("contact-form");
+
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            emailjs.send("service_8fef3ag", "template_8pvpunl", {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                message: document.getElementById("message").value
+            }).then(function () {
+
+                document.getElementById("form-success").classList.remove("hidden");
+
+                form.reset();
+
+                setTimeout(() => {
+                    document.getElementById("form-success").classList.add("hidden");
+                }, 5000);
+
+            }).catch(function (error) {
+                alert("Failed to send message.");
+                console.log(error);
+            });
+        });
+    </script>
+</body>
+
+</html>
